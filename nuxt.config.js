@@ -43,10 +43,19 @@ export default {
         accessToken: process.env.STORYBLOK_API_KEY,
         cacheProvider: 'memory'
       }
-    ]
+    ],
+  /*  [
+      'storyblok-js-client',
+      {
+        oauthToken: process.env.MANAGEMENT_API_KEY
+      }
+    ] */
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+  privateRuntimeConfig: {
+    managementApiKey: process.env.MANAGEMENT_API_KEY
   }
 }

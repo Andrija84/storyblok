@@ -16,6 +16,9 @@
 </template>
  
 <script>
+//https://github.com/storyblok/storyblok-js-client
+import StoryblokClient from '~/node_modules/storyblok-js-client'
+
 export default {
   data () {
     return {
@@ -28,15 +31,14 @@ export default {
   },
   methods:{
 
+    //Initial loading of posts
     getAllStories(){
       this.$storyapi.get('cdn/stories', {
         starts_with: 'posts/',
         version: 'draft'
       }).then((res) => {
-        console.log(res.data.stories)
-
-
-
+       //console.log(res.data.stories)
+       this.posts = res.data.stories
       }).catch((res) => {
         if (!res.response) {
           console.error(res)
@@ -46,48 +48,48 @@ export default {
       })
     },
 
+
+
     searchAndReplace(){
-      this.$storyapi.get('cdn/stories', {
-        starts_with: 'posts/',
-        version: 'draft'
-      }).then((res) => {
-        console.log(res.data.stories)
+   
+      var findWord = this.findWord;
+      var replaceWord = this.replaceWord;
+ 
+       this.posts.forEach(post => {
+        // post is a single object
+        // RegExp will also work for phraze
+        // Search only inside content
 
-        this.posts = res.data.stories;
-        var findWord = this.findWord;
-        var replaceWord = this.replaceWord;
-
-       /* var originalMsg = JSON.stringify(res.data.stories);
-        
         var regexp = new RegExp(findWord, "gi");
-        var updatedMsg = originalMsg.replace(regexp, replaceWord);
-        var newObj = JSON.parse(updatedMsg); 
-        console.log(newObj);
-       */ 
 
+        var originalPostContent= JSON.stringify(post.content.content);
+        var originalPostTitle= JSON.stringify(post.content.title);
+        
+        var replacedPostContent = originalPostContent.replace(regexp, replaceWord);
+        let updatedPostContent = JSON.parse(replacedPostContent); 
 
-       res.data.stories.forEach(post => {
-          // post is a single object
-          var originalPost= JSON.stringify(post);
-          var regexp = new RegExp(findWord, "gi");
-          var replacedPost = originalPost.replace(regexp, replaceWord);
-          let updatedPost = JSON.parse(replacedPost); 
+        var replacedPostTitle = originalPostTitle.replace(regexp, replaceWord);
+        let updatedPostTitle = JSON.parse(replacedPostTitle); 
 
-          //console.log(updatedPost)
+        var id = post.id;
+        var slug = post.slug;
+        var name = post.name;
+        var title = updatedPostTitle;
+        var imageUrl = post.content.image.filename;
+        var content = updatedPostContent;
 
-                var id = updatedPost.id;
-                var slug = updatedPost.slug;
-                var name = updatedPost.name;
-                var content = updatedPost.content.content
+        var managementApiKey =  this.$config.managementApiKey;
 
-          //https://www.storyblok.com/docs/api/management#core-resources/stories/update-story
-                //const StoryblokClient = require('storyblok-js-client')
+       
 
-      // Initialize the client with the oauth token
-      const Storyblok = new StoryblokClient({
-        oauthToken: 'vHAbQz5zhR6Hzb2BmuzV1Att-87915-4g4D7EWkuarXzGL5whDr'
-      })
+        // Initialize the client with the oauth token
+        //https://www.storyblok.com/docs/api/management#topics/authentication
+        const Storyblok = new StoryblokClient({
+          oauthToken: ''
 
+   
+        });
+        //https://www.storyblok.com/docs/api/management#core-resources/stories/update-story
         Storyblok.put('spaces/115389/stories/' + id, {
 
                   "story": {
@@ -96,41 +98,32 @@ export default {
                     "id": id,
                     "content": {
                       "component": "post",
-                      "content": content
+                      "content": content,
+                      "title" : title,
+                      "image":{
+                         "filename" : imageUrl
+                       },
                     }
                   },
                   "force_update": 1,
                   //"publish": 1
 
                 }).then(response => {
-                  console.log(response)
+                  //console.log(response)
+                  this.getAllStories();
                 }).catch(error => { 
                   console.log(error)
                 })
-         
+     }
 
-       })
-
-
-
-
-
-
-
-      }).catch((res) => {
-        if (!res.response) {
-          console.error(res)
-        } else {
-          console.error(res.response.data)
-        }
-      })
-    },
-
+  )}
   },
  
   created(){     
     this.getAllStories();
+    console.log(this.$config.managementApiKey)
   }
+
 
 }
 </script>
