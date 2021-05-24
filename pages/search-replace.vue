@@ -81,8 +81,14 @@ export default {
                 var content = updatedPost.content.content
 
           //https://www.storyblok.com/docs/api/management#core-resources/stories/update-story
+                //const StoryblokClient = require('storyblok-js-client')
 
-                this.$storyapi.put('cdn/stories/' + id , {
+      // Initialize the client with the oauth token
+      const Storyblok = new StoryblokClient({
+        oauthToken: 'vHAbQz5zhR6Hzb2BmuzV1Att-87915-4g4D7EWkuarXzGL5whDr'
+      })
+
+        Storyblok.put('spaces/115389/stories/' + id, {
 
                   "story": {
                     "name": name,
@@ -104,6 +110,8 @@ export default {
          
 
        })
+
+
 
 
 
