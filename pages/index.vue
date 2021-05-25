@@ -1,11 +1,17 @@
 <template>
-  <section>
+  <section class="container">
     <h2 class="">This is homepage and also a all posts list page</h2>
-    <ul id="posts-list">
-      <li v-for="post in stories" :key="post.id">
-      <nuxt-link :to="post.full_slug">{{ post.name }}</nuxt-link>
-      </li>
-    </ul>
+
+    <div class="grid-container">
+      <div class="grid-item" v-for="post in stories" :key="post.id">
+        <a :href="post.full_slug">
+          <img :src="post.content.image.filename" alt="">
+          <h2>{{post.content.title}}</h2>
+          <p>{{post.content.content}}</p>
+        </a>
+      </div>
+
+    </div>
 
   </section>
 </template>
@@ -14,13 +20,13 @@
 export default {
   data () {
     return {
-      stories: []
+      stories: [],
     }
   },
   asyncData (context) {
     return context.app.$storyapi.get('cdn/stories', {
       starts_with: 'posts/',
-      version: 'draft'
+      version: process.env.NODE_ENV == 'production' ? 'published' : 'draft'
     }).then((res) => {
       //console.log(res.data)
       return res.data
@@ -36,3 +42,26 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.container{max-width:1200px;margin:0 auto;}
+.grid-container {
+  display: grid;
+  grid-template-columns: calc(33.3% - 25px) calc(33.3% - 25px) calc(33.3% - 25px);
+  background-color: #f5f5f5;
+  padding: 10px;
+  gap: 20px 25px;
+}
+.grid-item {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  font-size: 30px;
+  text-align: center;
+}
+.grid-item img{object-fit:contain;width:100%;height:200px;}
+input, button{margin:12px 0;height:32px;}
+p{font-size:16px;}
+a{text-decoration: none;color:#000;}
+
+</style>

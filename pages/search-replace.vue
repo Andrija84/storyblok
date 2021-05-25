@@ -1,5 +1,6 @@
 <template>
-  <section>
+  <section class="container">
+
     <h2 class="">This is a search and replace page</h2>
     <p>Here you can search and replace inside all stories on Storyblok</p>
     <input type="text" placeholder="Enter word you want to replace" v-model="findWord">
@@ -8,16 +9,22 @@
     <p v-if="showErrorMessage">No matched words</p>
     <button @click="searchAndReplace">Replace</button>
 
+    <div class="grid-container">
+      <div class="grid-item" v-for="post in posts" :key="post.id">
+        <img :src="post.content.image.filename" alt="">
+        <h2>{{post.content.title}}</h2>
+        <p>{{post.content.content}}</p>
+      </div>
+    </div>
     
-    <pre>{{posts}}</pre>
-
-
+  <!-- <pre>{{posts}}</pre> -->
   </section>
 </template>
  
 <script>
 //https://github.com/storyblok/storyblok-js-client
 import StoryblokClient from '~/node_modules/storyblok-js-client'
+
 
 export default {
   data () {
@@ -29,13 +36,19 @@ export default {
       showErrorMessage: false
     }
   },
+
+  created(){   
+    // Populate the posts model
+    this.getAllStories();
+  },
+
   methods:{
 
     //Initial loading of posts
     getAllStories(){
       this.$storyapi.get('cdn/stories', {
-        starts_with: 'posts/',
-        version: 'draft'
+        starts_with: 'posts/', //Name of the folder
+        version: process.env.NODE_ENV == 'production' ? 'published' : 'draft'
       }).then((res) => {
        //console.log(res.data.stories)
        this.posts = res.data.stories
@@ -47,83 +60,98 @@ export default {
         }
       })
     },
-
-
-
+    // Search & replace 
     searchAndReplace(){
    
+      const managementApiKey =  this.$config.managementApiKey;
+      //Initialize the client with the oauth token
+      //https://www.storyblok.com/docs/api/management#topics/authentication
+      const Storyblok = new StoryblokClient({
+        oauthToken: managementApiKey
+      });
+
       var findWord = this.findWord;
       var replaceWord = this.replaceWord;
- 
-       this.posts.forEach(post => {
-        // post is a single object
-        // RegExp will also work for phraze
-        // Search only inside content
+      
 
-        var regexp = new RegExp(findWord, "gi");
+        this.posts.forEach(post => {
+          // post is a single object
+          // RegExp will also work for phraze
+          // Search only inside content
 
-        var originalPostContent= JSON.stringify(post.content.content);
-        var originalPostTitle= JSON.stringify(post.content.title);
-        
-        var replacedPostContent = originalPostContent.replace(regexp, replaceWord);
-        let updatedPostContent = JSON.parse(replacedPostContent); 
+          var regexp = new RegExp(findWord, "gi");
 
-        var replacedPostTitle = originalPostTitle.replace(regexp, replaceWord);
-        let updatedPostTitle = JSON.parse(replacedPostTitle); 
+          // Replace words only in content and title
+          var originalPostContent= JSON.stringify(post.content.content);
+          var originalPostTitle= JSON.stringify(post.content.title);
+          
+          var replacedPostContent = originalPostContent.replace(regexp, replaceWord);
+          let updatedPostContent = JSON.parse(replacedPostContent); 
 
-        var id = post.id;
-        var slug = post.slug;
-        var name = post.name;
-        var title = updatedPostTitle;
-        var imageUrl = post.content.image.filename;
-        var content = updatedPostContent;
+          var replacedPostTitle = originalPostTitle.replace(regexp, replaceWord);
+          let updatedPostTitle = JSON.parse(replacedPostTitle); 
 
-        var managementApiKey =  this.$config.managementApiKey;
+          var id = post.id;
+          var slug = post.slug;
+          var name = post.name;
+          var title = updatedPostTitle;
+          var imageUrl = post.content.image.filename;
+          var content = updatedPostContent;
 
-       
+          //https://www.storyblok.com/docs/api/management#core-resources/stories/update-story
+          Storyblok.put('spaces/115389/stories/' + id, {
 
-        // Initialize the client with the oauth token
-        //https://www.storyblok.com/docs/api/management#topics/authentication
-        const Storyblok = new StoryblokClient({
-          oauthToken: ''
+            "story": {
+              "name": name,
+              "slug": slug,
+              "id": id,
+              "content": {
+                "component": "post",
+                "content": content,
+                "title" : title,
+                "image":{
+                  "filename" : imageUrl
+                },
+              }
+            },
+            "force_update": 1,
+            //"publish": 1 // Want to publish ?
 
-   
-        });
-        //https://www.storyblok.com/docs/api/management#core-resources/stories/update-story
-        Storyblok.put('spaces/115389/stories/' + id, {
-
-                  "story": {
-                    "name": name,
-                    "slug": slug,
-                    "id": id,
-                    "content": {
-                      "component": "post",
-                      "content": content,
-                      "title" : title,
-                      "image":{
-                         "filename" : imageUrl
-                       },
-                    }
-                  },
-                  "force_update": 1,
-                  //"publish": 1
-
-                }).then(response => {
-                  //console.log(response)
-                  this.getAllStories();
-                }).catch(error => { 
-                  console.log(error)
-                })
+          }).then(response => {
+            this.showSuccessMessage = true;
+            this.getAllStories();
+          }).catch(error => { 
+            this.showErrorMessage = true;
+            console.log(error)
+          })
      }
 
   )}
-  },
- 
-  created(){     
-    this.getAllStories();
-    console.log(this.$config.managementApiKey)
   }
 
 
 }
 </script>
+
+
+
+<style>
+.container{max-width:1200px;margin:0 auto;}
+.grid-container {
+  display: grid;
+  grid-template-columns: calc(33.3% - 25px) calc(33.3% - 25px) calc(33.3% - 25px);
+  background-color: #f5f5f5;
+  padding: 10px;
+  gap: 20px 25px;
+}
+.grid-item {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  font-size: 30px;
+  text-align: center;
+}
+.grid-item img{object-fit:contain;width:100%;height:200px;}
+input, button{margin:12px 0;height:32px;}
+p{font-size:16px;}
+</style>

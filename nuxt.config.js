@@ -40,7 +40,7 @@ export default {
     [
       'storyblok-nuxt',
       {
-        accessToken: process.env.STORYBLOK_API_KEY,
+        accessToken: process.env.NODE_ENV == 'production' ? process.env.STORYBLOK_API_KEY_PREVIEW : process.env.STORYBLOK_API_KEY_PUBLIC ,  // STORYBLOK_API_KEY_PREVIEW used for draft versions
         cacheProvider: 'memory'
       }
     ],
@@ -55,7 +55,7 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   },
-  privateRuntimeConfig: {
-    managementApiKey: process.env.MANAGEMENT_API_KEY
+  publicRuntimeConfig: {
+    managementApiKey: process.env.STORYBLOK_MANAGEMENT_API_KEY
   }
 }
