@@ -40,6 +40,7 @@ export default {
   created(){   
     // Populate the posts model
     this.getAllStories();
+    this.getAllStoriesLinks();
   },
 
   methods:{
@@ -60,7 +61,26 @@ export default {
         }
       })
     },
-    // Search & replace 
+
+    //https://www.storyblok.com/tp/how-to-generate-sitemap-headless-cms
+    //https://www.storyblok.com/docs/api/content-delivery#core-resources/links/links
+    getAllStoriesLinks(){
+    this.$storyapi.get('cdn/links/', {
+        starts_with: 'posts/', //Name of the folder
+        version: process.env.NODE_ENV == 'production' ? 'published' : 'draft'
+      }).then((res) => {
+     //  console.log(res.data)
+      // this.posts = res.data.stories
+      }).catch((res) => {
+        if (!res.response) {
+          console.error(res)
+        } else {
+          console.error(res.response.data)
+        }
+      })
+    },
+
+    //Search & replace 
     searchAndReplace(){
    
       const managementApiKey =  this.$config.managementApiKey;
