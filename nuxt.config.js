@@ -1,4 +1,6 @@
 export default {
+  //https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-dev/
+  //dev: process.env.NODE_ENV !== 'production',
   // Global page headers: https://go.nuxtjs.dev/config-head
   server:{
     port: 3333,

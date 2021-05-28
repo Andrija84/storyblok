@@ -10,7 +10,6 @@
           <p>{{post.content.content}}</p>
         </a>
       </div>
-
     </div>
 
   </section>
@@ -32,7 +31,7 @@ export default {
       return res.data
     }).catch((res) => {
       if (!res.response) {
-        console.error(res)
+        //console.error(res)
         context.error({ statusCode: 404, message: 'Failed to receive content form api' })
       } else {
         console.error(res.response.data)

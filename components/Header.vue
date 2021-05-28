@@ -2,6 +2,7 @@
   <div class="main-header container">
     <nuxt-link to="/">Home</nuxt-link>
     <nuxt-link to="/search-replace">Search / Replace</nuxt-link>
+    <nuxt-link to="/published-posts">Published / Production</nuxt-link>
   </div>
 </template>
 
